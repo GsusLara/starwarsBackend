@@ -45,7 +45,7 @@ def login():
     elif user.password != password:
         return jsonify({"error": "user or password not found"}), 410
     else:  
-        return jsonify("inicio correcto"), 200
+        return jsonify("Message : inicio correcto"), 200
 
 @app.route('/user', methods=['POST']) 
 #se debe enviar la data como objeto
@@ -58,7 +58,7 @@ def add_user():
         db.session.commit()
         return jsonify("Message : Se adiciono un usuario!"),200
     else:
-        return jsonify("Message : el usuario ya existe!"),422
+        return jsonify({"error": "El usuario ya existe"}),420
 
 @app.route('/planets', methods=['GET'])
 def getPlanets():
@@ -95,7 +95,7 @@ def delFavorites(id):
     favorito = Favorites.query.get(id)
     db.session.delete(favorito)
     db.session.commit()
-    return jsonify("favorito eliminado"), 200
+    return jsonify("Message : favorito eliminado"), 200
 
 @app.route('/favorites', methods=['POST'])
 #se debe enviar la data como objeto
@@ -104,7 +104,7 @@ def add_newFavorite():
     favorito = Favorites(name=data["name"],user_id=data["user id"])
     db.session.add(favorito)
     db.session.commit()
-    return jsonify("favorito agregado"), 200
+    return jsonify("Message : favorito agregado"), 200
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
