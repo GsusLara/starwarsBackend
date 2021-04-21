@@ -10,6 +10,11 @@ from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Characters, Planets, Favorites
 #from models import Person
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
+import datetime
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -19,6 +24,9 @@ MIGRATE = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 setup_admin(app)
+
+app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY')
+jwt = JWTManager(app)
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
@@ -44,8 +52,14 @@ def login():
         return jsonify({"error": "user or password not found"}), 410
     elif user.password != password:
         return jsonify({"error": "user or password not found"}), 410
-    else:  
-        return jsonify("Message : inicio correcto"), 200
+    else:
+        tiempodeVida= datetime.timedelta(days=1)
+        tokenDeUsuario = create_access_token(identity=username, expires_delta=tiempodeVida) 
+        requestToken= {
+            "user": user.serialize(),
+            "token":tokenDeUsuario
+        }
+        return jsonify(requestToken), 200
 
 @app.route('/user', methods=['POST']) 
 #se debe enviar la data como objeto
