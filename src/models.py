@@ -40,18 +40,22 @@ class Planets(db.Model):
     gravity=db.Column(db.String(50))
     terrain=db.Column(db.String(50))
     population=db.Column(db.Integer)
+    climate=db.Column(db.String(50))
+    image=db.Column(db.String(255))
 
     def serialize(self):
         return {
             "id": self.id,
             "name": self.name,
             "diameter": self.diameter,
-            "rotation period": self.rotation_period,
+            "rotation_period": self.rotation_period,
             "orbital_period":self.orbital_period,
             "surface_water":self.surface_water,
             "gravity":self.gravity,
             "terrain":self.terrain,
-            "population":self.population
+            "population":self.population,
+            "climate":self.climate,
+            "image":self.image
         }
 
 class User(db.Model):
