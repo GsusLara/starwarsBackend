@@ -56,7 +56,7 @@ def login():
         tiempodeVida= datetime.timedelta(days=1)
         tokenDeUsuario = create_access_token(identity=username, expires_delta=tiempodeVida) 
         requestToken= {
-            "user": user.serialize(),
+            "id": user.id,
             "token":tokenDeUsuario
         }
         return jsonify(requestToken), 200
@@ -80,6 +80,15 @@ def getPlanets():
     request = list(map(lambda planeta:planeta.serialize(),planeta))    
     return jsonify(request), 200
 
+@app.route('/planets', methods=['Post'])
+def addinfo():
+    data = request.get_json()
+    for i in data:
+        planeta=Planets(name= i["name"],diameter= i["diameter"],rotation_period=i["rotation_period"],orbital_period=i["orbital_period"],surface_water=i["surface_water"],gravity=i["gravity"],terrain=i["terrain"],population=i["population"],climate=i["climate"],image=i["image"])
+        db.session.add(planeta)
+        db.session.commit()
+    return jsonify("Message : Se adiciono la data!"),200
+
 @app.route('/planets/<int:position>', methods=['GET'])
 def listPlanetsid(position):
     planeta = Planets.query.filter_by(id=position).first()
@@ -97,6 +106,26 @@ def listCharactersid(position):
     character = Characters.query.filter_by(id=position).first()
     request = character.serialize()
     return jsonify(request), 200
+
+@app.route('/characters', methods=['Post'])
+def addAllinfo():
+    data = request.get_json()
+    for i in data:
+        personajes=Characters(
+            name=i["name"],
+            height=i["height"],
+            mass=i["mass"],
+            gender=i["gender"],
+            homeworld=i["homeworld"],
+            image=i["image"],
+            born=i["born"],
+            died=i["died"],
+            species=i["species"],
+            cybernetics=i["cybernetics"]
+        )
+        db.session.add(personajes)
+        db.session.commit()
+    return jsonify("Message : Se adiciono la data!"),200
 
 @app.route('/favorites/<int:user>', methods=['GET'])
 def getFavorites(user):
