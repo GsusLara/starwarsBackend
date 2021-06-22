@@ -56,7 +56,6 @@ def login():
         tiempodeVida= datetime.timedelta(days=1)
         tokenDeUsuario = create_access_token(identity=username, expires_delta=tiempodeVida) 
         requestToken= {
-            "id": user.id,
             "token":tokenDeUsuario
         }
         return jsonify(requestToken), 200
