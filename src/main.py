@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Characters, Planets, Favorites
+from models import db, User, Characters, Planets
 #from models import Person
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
@@ -54,7 +54,7 @@ def login():
         return jsonify({"error": "user or password not found"}), 410
     else:
         tiempodeVida= datetime.timedelta(days=1)
-        tokenDeUsuario = create_access_token(identity=username, expires_delta=tiempodeVida) 
+        tokenDeUsuario = create_access_token(identity=user.id, expires_delta=tiempodeVida) 
         requestToken= {
             "token":tokenDeUsuario
         }
@@ -66,7 +66,7 @@ def add_user():
     data = request.get_json()
     validacion = User.query.filter_by(email=data["email"]).first()
     if validacion is None:
-        user1 = User(email=data["email"],password=data["password"],is_active=True)
+        user1 = User(email=data["email"],password=data["password"],favorites="")
         db.session.add(user1)
         db.session.commit()
         return jsonify("Message : Se adiciono un usuario!"),200
@@ -126,27 +126,25 @@ def addAllinfo():
         db.session.commit()
     return jsonify("Message : Se adiciono la data!"),200
 
-@app.route('/favorites/<int:user>', methods=['GET'])
-def getFavorites(user):
-    favorito = Favorites.query.filter_by(user_id=user).all()
-    request = list(map(lambda todo:todo.serialize(),favorito)) 
-    return jsonify(request), 200
+@app.route("/user", methods=["GET"])
+@jwt_required()
+def datauser():
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    return jsonify({"favorites": user.favorites })
 
-@app.route('/favorites/<int:id>', methods=['DELETE'])
-def delFavorites(id):
-    favorito = Favorites.query.get(id)
-    db.session.delete(favorito)
+@app.route('/user', methods=['PUT'])
+@jwt_required()
+def change_user_data():
+    # buscamos el registro  a actualizar
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+# obtenemos los datos parametros de entrada
+    upd_favorites= request.json["favorites"]
+# actualizamos  los nuevos datos
+    user.favorites = upd_favorites
     db.session.commit()
-    return jsonify("Message : favorito eliminado"), 200
-
-@app.route('/favorites', methods=['POST'])
-#se debe enviar la data como objeto
-def add_newFavorite():
-    data = request.get_json()
-    favorito = Favorites(name=data["name"],user_id=data["user id"])
-    db.session.add(favorito)
-    db.session.commit()
-    return jsonify("Message : favorito agregado"), 200
+    return jsonify({"msg": "Informacion actualizada"}), 200
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
